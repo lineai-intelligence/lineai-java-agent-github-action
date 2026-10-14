@@ -55,3 +55,15 @@ jobs:
 | `force_rescan`          | boolean | Forces the agent to rescan already scanned artifacts. Defaults to false.                                                                                                                                |
 | `expunge_scan_sessions` | boolean | Instruct the server to delete all other scan sessions created by this agent and its configuration after the current scan session has completed successfully. Defaults to false.                         |
 | `java_opts`             | String  | Java options to pass to the java command.                                                                                                                                                               |
+
+## Exit codes
+
+The step's result is the Java agent's exit code — the same contract as the Lineai JavaScript agent:
+
+| Code | Meaning                                                                                                                                                                                                                                   |
+|------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `0`  | Scan complete and results sent to Lineai. Archives that could not be analyzed while others succeeded are logged as warnings (`Scan complete with warnings: …`).                                                                         |
+| `1`  | Scan failed: no Java archives under `scan_path`, none could be analyzed, the scan space could not be created, invalid inputs, or Lineai could not be reached at the start of the scan.                                                 |
+| `2`  | The archives were analyzed, but some results could not be sent to Lineai (`Scan incomplete: …`). The step fails; the scan session is not finalized, so `expunge_scan_sessions` keeps the previous complete scan. Re-run once Lineai is reachable. |
+
+Agent images published before this behavior ended most failed uploads with exit code 0.
